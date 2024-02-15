@@ -14,6 +14,8 @@ def process_transaction(tx_hash, tag='noble'):
     tx = w3.eth.get_transaction(tx_hash)
     input_data = tx.input
     hex_input_data = input_data.hex() if isinstance(input_data, bytes) else input_data
+    if len(hex_input_data) < (133*2):
+        return ""
     address_hex_str = hex_input_data[133*2:153*2]  
     bech32_address = address_to_bech32(address_hex_str, tag)
     return bech32_address
