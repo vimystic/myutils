@@ -3,7 +3,7 @@ import bech32
 
 def address_to_bech32(address, tag):
     print(address)
-    if len(address) == 0:
+    if address == "":
         return ""
     address_bytes = bytes.fromhex(address)
     converted_bits = bech32.convertbits(address_bytes, 8, 5, True)
