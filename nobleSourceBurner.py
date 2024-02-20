@@ -15,16 +15,24 @@ def address_to_bech32(address, tag):
 def process_transaction(tx_hash, tag='noble'):
     tx = w3.eth.get_transaction(tx_hash)
     input_data = tx.input
-    address_hex_str = decode_function_input(contract, input_data) 
-    bech32_address = address_to_bech32(address_hex_str, tag)
-    return bech32_address
+    address_hex_str = decode_function_input(contract, input_data)
+    if address_hex_str == 'Error decoding input':
+        return 'Error decoding transaction input'
+    else:
+        bech32_address = address_to_bech32(address_hex_str, tag)
+        return bech32_address
+
 
 def decode_function_input(contract, input_data):
     if input_data == '0x':
         return 'No data', {}
-    func_obj, func_params = contract.decode_function_input(input_data)
-    #print(f"Function: {func_obj.fn_name}, Params: {func_params}")
-    return (func_params['message']).hex()[-40:]
+    try:
+        func_obj, func_params = contract.decode_function_input(input_data)
+        return (func_params['message']).hex()[-40:]
+    except ValueError as e:
+        print(f"Error decoding function input: {e}")
+        return 'Error decoding input'
+
 
 # Function to read transaction hashes from a CSV file
 def read_tx_hashes_from_csv(file_path):
@@ -57,5 +65,10 @@ for path in file_paths:
     tx_hashes.extend(read_tx_hashes_from_csv(path))
 
 for tx_hash in tx_hashes:
-    bech32_address = process_transaction(tx_hash.strip()) 
-    print(f" {tx_hash}: {bech32_address}")
+    tx_hash_trimmed = tx_hash.strip()  
+    bech32_address = process_transaction(tx_hash_trimmed)
+    if bech32_address.startswith("Error"):
+        print(f"Error processing transaction {tx_hash_trimmed}: {bech32_address}")
+    else:
+        print(f"Transaction {tx_hash_trimmed}: Bech32 address - {bech32_address}")
+
