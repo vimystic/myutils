@@ -1,6 +1,7 @@
 from web3 import Web3
 import bech32
 import json
+import csv 
 
 def address_to_bech32(address, tag):
     if address == "":
@@ -34,12 +35,19 @@ def decode_function_input(contract, input_data):
         return 'Error decoding input'
 
 
-# Function to read transaction hashes from a CSV file
-def read_tx_hashes_from_csv(file_path):
+# Function to process transaction hashes from a CSV file
+def process_tx_hashes_from_csv(file_path):
     with open(file_path, 'r') as file:
-        data = file.read()
-        tx_hashes = data.split(',') 
-    return tx_hashes
+        reader = csv.reader(file)
+        next(reader, None)  # Skip the header row
+        for row in reader:
+            tx_hash = row[0].strip()  # Assumes the transaction hash is in the first column
+            tx_hash_trimmed = tx_hash.strip()  
+            bech32_address = process_transaction(tx_hash_trimmed)
+            if bech32_address.startswith("Error"):
+                print(f"Error processing transaction {tx_hash_trimmed}: {bech32_address}")
+            else:
+                print(f"Transaction {tx_hash_trimmed}: Bech32 address - {bech32_address}")
 
 
 alchemy_url = "https://eth-mainnet.g.alchemy.com/v2/2PZMX2BG8IFkT_l_923CtNPrXIIbtlxr"
@@ -56,19 +64,11 @@ contract = w3.eth.contract(address=contract_address, abi=contract_abi)
 
 # File paths
 file_paths = [
-    '0xEF1a3C293875b8240F20d0Bbbb2461695Cd1E76d.csv',
-    '0xf3cc88ff74833abc6c04ba39c62ea608a138eb3c.csv'
+    '0xef.csv',
+    '0xf3.csv'
 ]
 
-tx_hashes = []
 for path in file_paths:
-    tx_hashes.extend(read_tx_hashes_from_csv(path))
-
-for tx_hash in tx_hashes:
-    tx_hash_trimmed = tx_hash.strip()  
-    bech32_address = process_transaction(tx_hash_trimmed)
-    if bech32_address.startswith("Error"):
-        print(f"Error processing transaction {tx_hash_trimmed}: {bech32_address}")
-    else:
-        print(f"Transaction {tx_hash_trimmed}: Bech32 address - {bech32_address}")
+    process_tx_hashes_from_csv(path)
+    
 
