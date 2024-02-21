@@ -57,26 +57,16 @@ def process_tx_hashes_and_update_csv(file_path):
     with open(file_path, mode='r', newline='') as file:
         reader = csv.reader(file)
         header = next(reader)
-        # Add both new column headers
         updated_rows.append(header + ['Noble Address', 'Dydx Address'])
-        
         for row in reader:
-            # For each row, process the transaction hash to get the noble address
             tx_hash = row[0].strip()
             noble_address = process_transaction(tx_hash)
-            
-            # Convert the noble address to Dydx address
             dydx_address = noble_to_dydx(noble_address)
-            
-            # Append both addresses to the row
             updated_rows.append(row + [noble_address, dydx_address])
     
     with open(file_path, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(updated_rows)
-
-
-
 
 
 alchemy_url = "https://eth-mainnet.g.alchemy.com/v2/2PZMX2BG8IFkT_l_923CtNPrXIIbtlxr"
@@ -91,7 +81,7 @@ contract = w3.eth.contract(address=contract_address, abi=contract_abi)
 # Check if web3 is successfully connected
 # print("Connected to Ethereum network:", w3.is_connected())
 
-# File paths
+# File paths . These are csv files from etherscan.io
 file_paths = [
     '0xEF1a3C293875b8240F20d0Bbbb2461695Cd1E76d.csv',
     '0xf3cc88ff74833abc6c04ba39c62ea608a138eb3c.csv'
