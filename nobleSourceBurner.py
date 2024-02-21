@@ -4,6 +4,8 @@ import json
 import csv 
 
 def address_to_bech32(address, tag):
+    if address == "NA":
+        return "NA"
     if address == "":
         return ""
     address_bytes = bytes.fromhex(address)
@@ -12,6 +14,20 @@ def address_to_bech32(address, tag):
         raise ValueError("Error converting bits for Bech32 encoding.")
     bech32_address = bech32.bech32_encode(tag, converted_bits)
     return bech32_address
+
+def noble_to_dydx(noble_address):
+    hrp, data = bech32.bech32_decode(noble_address)
+    if data is None:
+        return "NA"
+    
+    converted_bits = bech32.convertbits(data, 5, 8, False)
+    if converted_bits is None:
+        return "NA"
+    
+    hex_address = bytes(converted_bits).hex()
+    dydx_address = address_to_bech32(hex_address, "dydx")
+    
+    return dydx_address
 
 def process_transaction(tx_hash, tag='noble'):
     tx = w3.eth.get_transaction(tx_hash)
@@ -52,6 +68,25 @@ def process_tx_hashes_and_update_csv(file_path):
         writer = csv.writer(file)
         writer.writerows(updated_rows)
 
+def process_tx_hashes_and_update_csv2(file_path):
+    updated_rows = []
+    
+    with open(file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        header = next(reader)
+        updated_rows.append(header + ['Dydx Address'])
+        
+        for row in reader:
+            noble_addr = row[16].strip()
+            dydx_addr = noble_to_dydx(noble_addr)
+            updated_rows.append(row + [dydx_addr])
+    
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(updated_rows)
+
+
+
 
 alchemy_url = "https://eth-mainnet.g.alchemy.com/v2/2PZMX2BG8IFkT_l_923CtNPrXIIbtlxr"
 w3 = Web3(Web3.HTTPProvider(alchemy_url))
@@ -72,6 +107,7 @@ file_paths = [
 ]
 
 for path in file_paths:
-    process_tx_hashes_and_update_csv(path)
+    #process_tx_hashes_and_update_csv(path)
+    process_tx_hashes_and_update_csv2(path)
     
 
