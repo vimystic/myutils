@@ -67,8 +67,8 @@ contract = w3.eth.contract(address=contract_address, abi=contract_abi)
 
 # File paths
 file_paths = [
-    '0xef.csv',
-    '0xf3.csv'
+    '0xEF1a3C293875b8240F20d0Bbbb2461695Cd1E76d.csv',
+    '0xf3cc88ff74833abc6c04ba39c62ea608a138eb3c.csv'
 ]
 
 for path in file_paths:
