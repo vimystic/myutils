@@ -35,19 +35,22 @@ def decode_function_input(contract, input_data):
         return 'Error decoding input'
 
 
-# Function to process transaction hashes from a CSV file
-def process_tx_hashes_from_csv(file_path):
-    with open(file_path, 'r') as file:
+def process_tx_hashes_and_update_csv(file_path):
+    updated_rows = []
+    
+    with open(file_path, mode='r', newline='') as file:
         reader = csv.reader(file)
-        next(reader, None)  # Skip the header row
+        header = next(reader)
+        updated_rows.append(header + ['Noble Address'])
+        
         for row in reader:
-            tx_hash = row[0].strip()  # Assumes the transaction hash is in the first column
-            tx_hash_trimmed = tx_hash.strip()  
-            bech32_address = process_transaction(tx_hash_trimmed)
-            if bech32_address.startswith("Error"):
-                print(f"Error processing transaction {tx_hash_trimmed}: {bech32_address}")
-            else:
-                print(f"Transaction {tx_hash_trimmed}: Bech32 address - {bech32_address}")
+            tx_hash = row[0].strip()
+            bech32_address = process_transaction(tx_hash)
+            updated_rows.append(row + [bech32_address])
+    
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(updated_rows)
 
 
 alchemy_url = "https://eth-mainnet.g.alchemy.com/v2/2PZMX2BG8IFkT_l_923CtNPrXIIbtlxr"
@@ -69,6 +72,6 @@ file_paths = [
 ]
 
 for path in file_paths:
-    process_tx_hashes_from_csv(path)
+    process_tx_hashes_and_update_csv(path)
     
 
